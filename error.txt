@@ -1,14 +1,6 @@
-[123/309] Processing: LiveData Migrator - List Migrations
-Error processing LiveData Migrator - List Migrations: Cannot convert value "<?xml version='1.1' encoding='UTF-8'?>
-<project>
-  <actions/>
-  <description>Display information on a specific migrator &amp; Display a list of migrator targets from the specified migrator deployment.&#xd;
-&#xd;
-Pre-requisite:&#xd;
-LiveData Migrator</description>
+<description>Create a data factory workspace</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.5"/>
     <hudson.security.AuthorizationMatrixProperty>
       <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy"/>   
       <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:gdo_ca_pre_adm_full</permission>
@@ -29,12 +21,7 @@ LiveData Migrator</description>
       <permission>hudson.model.Run.Update:gdo_ca_pre_adm_full</permission>
       <permission>hudson.scm.SCM.Tag:gdo_ca_pre_adm_full</permission>
     </hudson.security.AuthorizationMatrixProperty>
-    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.20">      
-      <gitLabConnection></gitLabConnection>
-      <jobCredentialId></jobCredentialId>
-      <useAlternativeCredential>false</useAlternativeCredential>
-    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
-    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@332.va_1ee476d8f6d">
       <autoRebuild>false</autoRebuild>
       <rebuildDisabled>false</rebuildDisabled>
     </com.sonyericsson.rebuild.RebuildSettings>
@@ -45,39 +32,117 @@ LiveData Migrator</description>
           <description>gdo-non-prod:  MFC-Global-Corp-DATAGROSS-EDL2-NonProduction-S1
 gdo-prod:  MFC-Global-Corp-DATAGROSS-EDL2-Production-S1
 gdcore-non-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-NonProduction-S1
-gdcore-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-Production-S1</description>
+gdcore-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-Production-S1
+gft-nonprod: MFC-Global-Corp-CorporateSharedSvc-GFTSupp01-NonProduction-S1
+gft-prod: MFC-Global-Corp-CorporateSharedSvc-GFTSupp01-Production-S1</description>
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
               <string>gdo-nonprod</string>
               <string>gdo-prod</string>
-              <string>gdcore-non-prod</string>
+              <string>gdcore-nonprod</string>
               <string>gdcore-prod</string>
+              <string>gdo-poc</string>
+              <string>gddatalab</string>
+              <string>gddatalab-East</string>
+              <string>gft-nonprod</string>
+              <string>gft-prod</string>
             </a>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.5">       
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1319.v7eb_51b_3a_c97b_">
           <name>spn_secret_param</name>
           <description>Secret of SPN for the Azure subscription</description>
-          <defaultValue>gdo-nonprod-subscription-SPN-secret</defaultValue>
+          <defaultValue></defaultValue>
           <credentialType>org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl</credentialType>
-          <required>true</required>
+          <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>resource_group</name>
-          <description>The name of the resource group that contains the migrator deployment</description> 
-          <defaultValue>CACd-gdo-common-gdo-01-rg</defaultValue>
+          <name>aks_name</name>
+          <description>AKS cluster name</description>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>migrator_name</name>
-          <description>The reference name for the migrator deployment.</description>
-          <defaultValue>gdowdnp</defaultValue>
+          <name>resource_group</name>
+          <description>Name of the resource group for data factory workspace</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>location</name>
+          <description>Azure region of AKS cluster. Primary site is Canada Central. DR site is Canada East</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>canadacentral</string>
+              <string>canadaeast</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_version</name>
+          <description>Version of AKS cluster, current version is 1.23.8</description>
+          <defaultValue>1.23.8</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>user_assigned_managed_id</name>
+          <description>Managed identify for private AKS cluster</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_vm_size</name>
+          <description>VM size for the default node pool</description>
+          <defaultValue>Standard_DS3_v2</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_node_count</name>
+          <description>number of nodes for the default node pool</description>
+          <defaultValue>3</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_max_node_count</name>
+          <description>Max number of nodes for the default node pool</description>
+          <defaultValue>3</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_min_node_count</name>
+          <description>min number of nodes for the default node pool</description>
+          <defaultValue>3</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_max_pod_count</name>
+          <description>Max number of pods for a node. This parameter is for AKS CNI cluster</description> 
+          <defaultValue>10</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>aks_network_mode</name>
+          <description>AKS network mode</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>kubenet</string>
+              <string>cni</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aks_subnet</name>
+          <description>Subnet name of AKS network</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tags</name>
+          <description>Comma separated key value pairs.
+BusinessUnit=GDO,CostCenter=9215
+</description>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.7.2">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@5.2.1">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -102,16 +167,17 @@ gdcore-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-Production-S1</descript
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>cd wandisco
-chmod 755 show-migrator.py
-export AZURE_CONFIG_DIR=/home/jenkins/.${azure_subscription}
-./show-migrator.py --log debug --config ../config/azure.ini --section ${azure_subscription} --resource-group ${resource_group} --migrator-name ${migrator_name} --azure-pass ${spn_secret}</command>
+      <command>cd aks
+./scripts/10-aks-provision.py -v DEBUG -c ../config/azure.ini -s $azure_subscription -n $aks_name -r $resource_group -l $location \
+-ae $aks_version -au $user_assigned_managed_id \
+-av $aks_vm_size -ac $aks_node_count -aa $aks_max_node_count -ai $aks_min_node_count -ap $aks_max_pod_count \
+-am $aks_network_mode -as $aks_subnet -t $tags -p $spn_secret</command>
       <configuredLocalRules/>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
   <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.26">  
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@657.v2b_19db_7d6e6d">
       <bindings>
         <org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
           <credentialsId>${spn_secret_param}</credentialsId>
@@ -123,8 +189,6 @@ export AZURE_CONFIG_DIR=/home/jenkins/.${azure_subscription}
         </org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
       </bindings>
     </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
-    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@1.0.0">
-      <colorMapName>xterm</colorMapName>
-    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
   </buildWrappers>
 </project>" to type "System.Xml.XmlDocument". Error: "Version number '1.1' is invalid. Line 1, position 16."
+[18/309] Processing: AKS Create Namespace

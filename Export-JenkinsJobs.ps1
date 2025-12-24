@@ -19,24 +19,71 @@ function Get-XmlNodeText {
     return $node.ToString()
 }
 
-# Function to fix XML 1.1 and parse safely
+# Function to fix XML 1.1 and parse safely with better error handling
 function Get-ParsedXml {
     param([string]$xmlContent)
     
     try {
+        # Remove BOM if present (UTF-8, UTF-16, etc.)
+        $xmlContent = $xmlContent.TrimStart([char]0xFEFF)  # UTF-16 BOM
+        $xmlContent = $xmlContent.TrimStart([char]0xEF, [char]0xBB, [char]0xBF)  # UTF-8 BOM
+        $xmlContent = $xmlContent.Trim()
+        
         # Replace XML 1.1 with 1.0
-        $fixedXml = $xmlContent -replace "<?xml version='1\.1'", "<?xml version='1.0'"
-        $fixedXml = $fixedXml -replace '<?xml version="1\.1"', '<?xml version="1.0"'
+        $xmlContent = $xmlContent -replace "<?xml version='1\.1'", "<?xml version='1.0'"
+        $xmlContent = $xmlContent -replace '<?xml version="1\.1"', '<?xml version="1.0"'
+        
+        # Remove any leading whitespace or control characters
+        $xmlContent = $xmlContent -replace '^\s+', ''
+        $xmlContent = $xmlContent -replace '^[\x00-\x1F]+', ''
         
         # Parse XML
         $xml = New-Object System.Xml.XmlDocument
-        $xml.LoadXml($fixedXml)
+        $xml.PreserveWhitespace = $false
+        $xml.LoadXml($xmlContent)
         return $xml
     }
     catch {
-        Write-Host "    XML Parse Error: $_" -ForegroundColor Red
-        return $null
+        # Try alternative: strip everything before first < character
+        try {
+            $startIndex = $xmlContent.IndexOf('<?xml')
+            if ($startIndex -lt 0) {
+                $startIndex = $xmlContent.IndexOf('<')
+            }
+            
+            if ($startIndex -gt 0) {
+                $xmlContent = $xmlContent.Substring($startIndex)
+                
+                # Try again with cleaned content
+                $xmlContent = $xmlContent -replace "<?xml version='1\.1'", "<?xml version='1.0'"
+                $xmlContent = $xmlContent -replace '<?xml version="1\.1"', '<?xml version="1.0"'
+                
+                $xml = New-Object System.Xml.XmlDocument
+                $xml.PreserveWhitespace = $false
+                $xml.LoadXml($xmlContent)
+                return $xml
+            }
+        }
+        catch {
+            # Last resort: try to read as bytes and convert
+            try {
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($xmlContent)
+                $cleanContent = [System.Text.Encoding]::UTF8.GetString($bytes).Trim()
+                $cleanContent = $cleanContent -replace "<?xml version='1\.1'", "<?xml version='1.0'"
+                $cleanContent = $cleanContent -replace '<?xml version="1\.1"', '<?xml version="1.0"'
+                
+                $xml = New-Object System.Xml.XmlDocument
+                $xml.LoadXml($cleanContent)
+                return $xml
+            }
+            catch {
+                Write-Host "    XML Parse Error: $_" -ForegroundColor Red
+                return $null
+            }
+        }
     }
+    
+    return $null
 }
 
 # Get all jobs
@@ -65,15 +112,20 @@ foreach ($job in $allJobs) {
     
     try {
         # Get job config XML as raw text
-        $configUrl = "$jenkinsUrl/job/$([uri]::EscapeDataString($job.name))/config.xml"
+        $encodedJobName = [uri]::EscapeDataString($job.name)
+        $configUrl = "$jenkinsUrl/job/$encodedJobName/config.xml"
+        
+        # Use UTF8 encoding explicitly
         $configResponse = Invoke-WebRequest -Uri $configUrl -Headers $headers -Method Get -UseBasicParsing
-        $configRaw = $configResponse.Content
+        
+        # Get content as UTF8 string
+        $configRaw = [System.Text.Encoding]::UTF8.GetString($configResponse.Content)
         
         # Parse XML with fix
         $xmlConfig = Get-ParsedXml -xmlContent $configRaw
         
         if ($null -eq $xmlConfig) {
-            throw "Failed to parse XML"
+            throw "Failed to parse XML after multiple attempts"
         }
         
         # Determine job type
@@ -250,6 +302,11 @@ foreach ($job in $allJobs) {
             Description = "Failed: $($_.Exception.Message)"
             Config_Hash = "ERROR"
         }
+    }
+    
+    # Progress indicator every 50 jobs
+    if ($counter % 50 -eq 0) {
+        Write-Host "  Progress: $counter/$($allJobs.Count) - Success: $successCount, Errors: $errorCount" -ForegroundColor Yellow
     }
 }
 

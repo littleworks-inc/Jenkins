@@ -1,0 +1,84 @@
+GroupID,Type,Name,Views
+F22,FuzzyNearDuplicate,AML-Compute-Instance-Rebuild-temp1,Machine Learning
+F22,FuzzyNearDuplicate,AML-Compute-Instance-Rebuild-temp2,Machine Learning
+F23,FuzzyNearDuplicate,LiveData Migrator - Metadata Migration Deprovisioning,WANdisco
+F23,FuzzyNearDuplicate,LiveData Migrator - Metadata Migration Provisioning,WANdisco
+F24,FuzzyNearDuplicate,Promotion Pipeline to Existing Python Web App - cacd-chatmfc1-aslwp-be,all
+F24,FuzzyNearDuplicate,Promotion Pipeline to Existing Python Web App - cacd-chatmfc1-aslwp-dev-be (QA),all
+F25,FuzzyNearDuplicate,LiveData Migrator - Migration Deprovisioning,WANdisco
+F25,FuzzyNearDuplicate,LiveData Migrator - Migration Provisioning,WANdisco
+F26,FuzzyNearDuplicate,Azure-Container-Registry/CC-Container-Registry-Provision,(No View)
+F26,FuzzyNearDuplicate,Azure-Container-Registry/Container Registry - Provision TEST,(No View)
+F27,FuzzyNearDuplicate,AABuild - Cloud-Catalog Webapp Provisioning BE NO SLOT,Cloud Catalog
+F27,FuzzyNearDuplicate,AABuild - Cloud-Catalog Webapp Provisioning BE WITH SLOT,Webapp
+F28,FuzzyNearDuplicate,purview/cc-purview-deprovision,(No View)
+F28,FuzzyNearDuplicate,purview/cc-purview-provision,(No View)
+F29,FuzzyNearDuplicate,Synapse SQL Pool Deprovisioning,Synapse
+F29,FuzzyNearDuplicate,Synapse SQL Pool Provisioning,Synapse
+F30,FuzzyNearDuplicate,"WFM ADF Trigger Action for DEV, SIT and UAT",all
+F30,FuzzyNearDuplicate,"WFM ADF Trigger Action for DEV, SIT, UAT",all
+F31,FuzzyNearDuplicate,UC - Data - (Temporary) Assign Schema Permission,Unity Catalog
+F31,FuzzyNearDuplicate,UC - Data - Assign Schema Permission,Unity Catalog
+F32,FuzzyNearDuplicate,Synapse SQL Pool Resize,Synapse
+F32,FuzzyNearDuplicate,Synapse SQL Pool Resume,Synapse
+F33,FuzzyNearDuplicate,Key-Vault/CC-Key-Vault-Provision,(No View)
+F33,FuzzyNearDuplicate,Key-Vault/test/Key Vault - Provision TEST,(No View)
+F34,FuzzyNearDuplicate,AKS Cluster - Provisioning US,AKS
+F34,FuzzyNearDuplicate,AKS Cluster Provisioning,AKS
+F34,FuzzyNearDuplicate,AML Cluster - De provision,Machine Learning
+F34,FuzzyNearDuplicate,AML Cluster - Provision,Machine Learning
+F35,FuzzyNearDuplicate,LiveData Migrator - Bulk Metadata Migration Provisioning,WANdisco
+F35,FuzzyNearDuplicate,LiveData Migrator - Metadata Migration Provisioning,WANdisco
+N1,NormalizedDuplicate,Trash,all
+N1,NormalizedDuplicate,Trash/test,(No View)
+N10,NormalizedDuplicate,Key-Vault/CC-Key-Vault-Secret-Role-Assignment,(No View)
+N10,NormalizedDuplicate,Key-Vault/test/CC-Key-Vault-Secret-Role-Assignment-test,(No View)
+N11,NormalizedDuplicate,Key-Vault/CC-Key-Vault-Secret-Role-Revoke,(No View)
+N11,NormalizedDuplicate,Key-Vault/test/CC-Key-Vault-Secret-Role-Revoke-test,(No View)
+N12,NormalizedDuplicate,Monitoring-DEVO-integration,Devo
+N12,NormalizedDuplicate,Monitoring-DEVO-integration-obsolete,Devo
+N13,NormalizedDuplicate,Provision Databricks Compute Cluster,Databricks
+N13,NormalizedDuplicate,Provision Databricks Compute Cluster - NonProd - TO BE DELETED,Databricks
+N13,NormalizedDuplicate,Provision Databricks Compute Cluster - PROD - TO BE DELETED,Databricks
+N14,NormalizedDuplicate,Provision or Deprovision Environment,Machine Learning
+N14,NormalizedDuplicate,TEST - Provision or Deprovision Environment,all
+N15,NormalizedDuplicate,"Provision,Deprovision AML Instance",Machine Learning
+N15,NormalizedDuplicate,"TEST - Provision,Deprovision AML Instance",all
+N16,NormalizedDuplicate,SQL Database De Provision,SQL Server
+N16,NormalizedDuplicate,SQL Database Provision,SQL Server
+N17,NormalizedDuplicate,Storage-Account,Cloud Catalog
+N17,NormalizedDuplicate,Storage-Account/test,(No View)
+N18,NormalizedDuplicate,Storage-Account-Provisioning-old,Storage Account
+N18,NormalizedDuplicate,Trash/Storage Account - Provisioning - USE2,(No View)
+N18,NormalizedDuplicate,Trash/Storage Account Provisioning,(No View)
+N19,NormalizedDuplicate,Storage-Account/Storage-Account-Provision,(No View)
+N19,NormalizedDuplicate,Storage-Account/Storage-Account-Provision-US,(No View)
+N19,NormalizedDuplicate,Storage-Account/test/Storage Account - Provision TEST,(No View)
+N19,NormalizedDuplicate,Storage-Account/test/Storage-Account-Provision-old,(No View)
+N2,NormalizedDuplicate,AKS Cluster - Provisioning US,AKS
+N2,NormalizedDuplicate,AKS Cluster Provisioning,AKS
+N20,NormalizedDuplicate,Storage-Account/Storage-Account-Role-Assignment,(No View)
+N20,NormalizedDuplicate,Storage-Account/test/Storage-Account-Role-Assignment-test,(No View)
+N21,NormalizedDuplicate,Web App - translator PROD,all
+N21,NormalizedDuplicate,Web App - translator QA,all
+N21,NormalizedDuplicate,Web App - translator UAT,all
+N21,NormalizedDuplicate,Web App - translator dev,all
+N3,NormalizedDuplicate,AML Cluster - De provision,Machine Learning
+N3,NormalizedDuplicate,AML Cluster - Provision,Machine Learning
+N4,NormalizedDuplicate,Test - AML-Compute-Instance-Maintenance,all
+N4,NormalizedDuplicate,Trash/OLD - AML-Compute-Instance-Maintenance,(No View)
+N4,NormalizedDuplicate,Trash/Test-AML-Compute-Instance-Maintenance,(No View)
+N5,NormalizedDuplicate,AML - Compute Instance Provision,Machine Learning
+N5,NormalizedDuplicate,AML - Compute Instance de-Provision,Machine Learning
+N5,NormalizedDuplicate,AML-Compute-Instance-Provision,Machine Learning
+N5,NormalizedDuplicate,OLD - AML-Compute-Instance-Provision - OLD,all
+N5,NormalizedDuplicate,TEST - AML-Compute-Instance-Provision,all
+N6,NormalizedDuplicate,DEV ChatMFC - AI Search Batch Clean Up,ChatMFC_AISearchCleanup
+N6,NormalizedDuplicate,PROD ChatMFC - AI Search Batch Clean Up,ChatMFC_AISearchCleanup
+N6,NormalizedDuplicate,UAT ChatMFC - AI Search Batch Clean Up,ChatMFC_AISearchCleanup
+N7,NormalizedDuplicate,Key-Vault,Cloud Catalog
+N7,NormalizedDuplicate,Key-Vault/test,(No View)
+N8,NormalizedDuplicate,Key-Vault/CC-Key-Vault-Role-Assignment,(No View)
+N8,NormalizedDuplicate,Key-Vault/test/CC-Key-Vault-Role-Assignment-test,(No View)
+N9,NormalizedDuplicate,Key-Vault/CC-Key-Vault-Role-Revoking,(No View)
+N9,NormalizedDuplicate,Key-Vault/test/CC-Key-Vault-Role-Revoking-test,(No View)

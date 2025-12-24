@@ -1,0 +1,130 @@
+[123/309] Processing: LiveData Migrator - List Migrations
+Error processing LiveData Migrator - List Migrations: Cannot convert value "<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Display information on a specific migrator &amp; Display a list of migrator targets from the specified migrator deployment.&#xd;
+&#xd;
+Pre-requisite:&#xd;
+LiveData Migrator</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.5"/>
+    <hudson.security.AuthorizationMatrixProperty>
+      <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy"/>   
+      <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:gdo_ca_pre_adm_full</permission>
+      <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:gdo_ca_pre_adm_full</permission>
+      <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:gdo_ca_pre_adm_full</permission>
+      <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:gdo_ca_pre_adm_full</permission>
+      <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Build:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Cancel:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Configure:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Delete:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Discover:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Move:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Read:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Item.Workspace:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Run.Delete:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Run.Replay:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.model.Run.Update:gdo_ca_pre_adm_full</permission>
+      <permission>hudson.scm.SCM.Tag:gdo_ca_pre_adm_full</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.20">      
+      <gitLabConnection></gitLabConnection>
+      <jobCredentialId></jobCredentialId>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>azure_subscription</name>
+          <description>gdo-non-prod:  MFC-Global-Corp-DATAGROSS-EDL2-NonProduction-S1
+gdo-prod:  MFC-Global-Corp-DATAGROSS-EDL2-Production-S1
+gdcore-non-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-NonProduction-S1
+gdcore-prod:  MFC-Global-Corp-CorporateSharedSvc-gdcore1-Production-S1</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>gdo-nonprod</string>
+              <string>gdo-prod</string>
+              <string>gdcore-non-prod</string>
+              <string>gdcore-prod</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.5">       
+          <name>spn_secret_param</name>
+          <description>Secret of SPN for the Azure subscription</description>
+          <defaultValue>gdo-nonprod-subscription-SPN-secret</defaultValue>
+          <credentialType>org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>resource_group</name>
+          <description>The name of the resource group that contains the migrator deployment</description> 
+          <defaultValue>CACd-gdo-common-gdo-01-rg</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>migrator_name</name>
+          <description>The reference name for the migrator deployment.</description>
+          <defaultValue>gdowdnp</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.7.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/manulife-gft/adl_aml.git</url>
+        <credentialsId>ce25d359-94c7-4d14-af87-fc6ac6b3b11f</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/one_cdb</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="empty-list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd wandisco
+chmod 755 show-migrator.py
+export AZURE_CONFIG_DIR=/home/jenkins/.${azure_subscription}
+./show-migrator.py --log debug --config ../config/azure.ini --section ${azure_subscription} --resource-group ${resource_group} --migrator-name ${migrator_name} --azure-pass ${spn_secret}</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.26">  
+      <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
+          <credentialsId>${spn_secret_param}</credentialsId>
+          <variable>spn_secret</variable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
+        <org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
+          <credentialsId>mysql_gdoops</credentialsId>
+          <variable>mysql_pass</variable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.StringBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@1.0.0">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+  </buildWrappers>
+</project>" to type "System.Xml.XmlDocument". Error: "Version number '1.1' is invalid. Line 1, position 16."

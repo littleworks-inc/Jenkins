@@ -66,7 +66,7 @@ foreach ($job in $allJobs) {
     try {
         # Get job config XML as raw text
         $configUrl = "$jenkinsUrl/job/$([uri]::EscapeDataString($job.name))/config.xml"
-        $configResponse = Invoke-WebRequest -Uri $configUrl -Headers $headers -Method Get
+        $configResponse = Invoke-WebRequest -Uri $configUrl -Headers $headers -Method Get -UseBasicParsing
         $configRaw = $configResponse.Content
         
         # Parse XML with fix

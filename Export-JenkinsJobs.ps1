@@ -21,6 +21,13 @@ function Get-XmlNodeText {
     return ""
 }
 
+# Function to fix XML 1.1 version to 1.0 for PowerShell parsing
+function Fix-XmlVersion {
+    param([string]$xmlContent)
+    # Replace XML 1.1 with 1.0
+    return $xmlContent -replace "<?xml version='1.1'", "<?xml version='1.0'"
+}
+
 # Get all jobs
 Write-Host "Fetching all Jenkins jobs..." -ForegroundColor Green
 $jobsUrl = "$jenkinsUrl/api/json?tree=jobs[name,url,color]"
@@ -40,7 +47,10 @@ foreach ($job in $allJobs) {
     try {
         # Get job config XML
         $configUrl = "$jenkinsUrl/job/$($job.name)/config.xml"
-        $config = Invoke-RestMethod -Uri $configUrl -Headers $headers -Method Get
+        $configRaw = Invoke-RestMethod -Uri $configUrl -Headers $headers -Method Get
+        
+        # Fix XML version issue
+        $config = Fix-XmlVersion -xmlContent $configRaw
         
         # Parse XML
         [xml]$xmlConfig = $config
@@ -51,11 +61,15 @@ foreach ($job in $allJobs) {
         # Extract Git URLs (can be multiple)
         $gitUrls = @()
         $gitBranches = @()
+        $gitCredentials = @()
         
         if ($xmlConfig.project.scm.userRemoteConfigs) {
             $xmlConfig.project.scm.userRemoteConfigs.ChildNodes | ForEach-Object {
                 if ($_.url) {
                     $gitUrls += Get-XmlNodeText $_.url
+                }
+                if ($_.credentialsId) {
+                    $gitCredentials += Get-XmlNodeText $_.credentialsId
                 }
             }
         }
@@ -74,9 +88,9 @@ foreach ($job in $allJobs) {
             $xmlConfig.project.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.ChildNodes | ForEach-Object {
                 $paramName = Get-XmlNodeText $_.name
                 $paramDefault = Get-XmlNodeText $_.defaultValue
-                $paramType = $_.LocalName
+                $paramType = $_.LocalName -replace 'hudson\.model\.', '' -replace 'ParameterDefinition', ''
                 if ($paramName) {
-                    $paramsList += "${paramType}:${paramName}=$(if($paramDefault){$paramDefault}else{''})"
+                    $paramsList += "${paramType}:${paramName}=$(if($paramDefault){$paramDefault}else{'N/A'})"
                 }
             }
         }
@@ -85,7 +99,7 @@ foreach ($job in $allJobs) {
         $buildStepsList = @()
         if ($xmlConfig.project.builders) {
             $xmlConfig.project.builders.ChildNodes | ForEach-Object {
-                $stepType = $_.LocalName
+                $stepType = $_.LocalName -replace 'hudson\.tasks\.', ''
                 $buildStepsList += $stepType
             }
         }
@@ -135,7 +149,7 @@ foreach ($job in $allJobs) {
         
         if ($xmlConfig.project.triggers) {
             $xmlConfig.project.triggers.ChildNodes | ForEach-Object {
-                $triggerType = $_.LocalName
+                $triggerType = $_.LocalName -replace 'hudson\.triggers\.', ''
                 $triggersList += $triggerType
                 
                 # Get cron schedule if exists
@@ -149,12 +163,22 @@ foreach ($job in $allJobs) {
         $postBuildList = @()
         if ($xmlConfig.project.publishers) {
             $xmlConfig.project.publishers.ChildNodes | ForEach-Object {
-                $postBuildList += $_.LocalName
+                $actionType = $_.LocalName -replace 'hudson\.tasks\.', ''
+                $postBuildList += $actionType
+            }
+        }
+        
+        # Extract build wrappers (credentials binding, etc.)
+        $buildWrappersList = @()
+        if ($xmlConfig.project.buildWrappers) {
+            $xmlConfig.project.buildWrappers.ChildNodes | ForEach-Object {
+                $wrapperType = $_.LocalName -replace 'org\.jenkinsci\.plugins\.', '' -replace 'hudson\.plugins\.', ''
+                $buildWrappersList += $wrapperType
             }
         }
         
         # Create comprehensive hash for similarity detection (excluding job name)
-        $configString = "$($gitUrls -join '|')|$($gitBranches -join '|')|$($buildStepsList -join '|')|$($allCommands -join '|')|$mavenGoals|$($triggersList -join '|')|$cronSchedule"
+        $configString = "$($gitUrls -join '|')|$($gitBranches -join '|')|$($buildStepsList -join '|')|$($allCommands -join '|')|$mavenGoals|$($triggersList -join '|')|$cronSchedule|$($paramsList -join '|')"
         $configBytes = [System.Text.Encoding]::UTF8.GetBytes($configString)
         $configHash = (Get-FileHash -InputStream ([System.IO.MemoryStream]::new($configBytes)) -Algorithm MD5).Hash
         
@@ -165,11 +189,12 @@ foreach ($job in $allJobs) {
             JobURL = $job.url
             Status = $job.color
             Disabled = if ($xmlConfig.project.disabled) { $xmlConfig.project.disabled } else { "false" }
-            Description = (Get-XmlNodeText $xmlConfig.project.description) -replace "`n"," " -replace "`r"," "
+            Description = (Get-XmlNodeText $xmlConfig.project.description) -replace "`n"," " -replace "`r"," " -replace "\s+"," "
             
             # Git Information
             Git_URLs = $gitUrls -join " | "
             Git_Branches = $gitBranches -join " | "
+            Git_Credentials = $gitCredentials -join " | "
             
             # SCM Type
             SCM_Type = if ($xmlConfig.project.scm.class) { $xmlConfig.project.scm.class } else { "None" }
@@ -186,10 +211,15 @@ foreach ($job in $allJobs) {
             Build_Steps = $buildStepsList -join " | "
             Build_Steps_Count = $buildStepsList.Count
             
-            # Commands/Scripts
-            Commands_Full = ($allCommands -join " ### ") -replace "`n"," " -replace "`r"," "
-            Commands_Summary = if ($allCommands) { 
-                ($allCommands -join " ### ").Substring(0, [Math]::Min(500, ($allCommands -join " ### ").Length)) 
+            # Commands/Scripts (first command only for summary)
+            First_Command = if ($allCommands.Count -gt 0) { 
+                $allCommands[0].Substring(0, [Math]::Min(300, $allCommands[0].Length)) 
+            } else { "" }
+            
+            # Full commands for hash calculation
+            Commands_Hash = if ($allCommands) { 
+                $cmdBytes = [System.Text.Encoding]::UTF8.GetBytes(($allCommands -join ""))
+                (Get-FileHash -InputStream ([System.IO.MemoryStream]::new($cmdBytes)) -Algorithm MD5).Hash
             } else { "" }
             
             # Maven
@@ -198,15 +228,15 @@ foreach ($job in $allJobs) {
             # Post Build Actions
             Post_Build_Actions = $postBuildList -join " | "
             
+            # Build Wrappers
+            Build_Wrappers = $buildWrappersList -join " | "
+            
             # Node/Label
             Assigned_Node = if ($xmlConfig.project.assignedNode) { Get-XmlNodeText $xmlConfig.project.assignedNode } else { "any" }
-            Restrict_Node = if ($xmlConfig.project.canRoam) { $xmlConfig.project.canRoam } else { "false" }
+            Can_Roam = if ($xmlConfig.project.canRoam) { $xmlConfig.project.canRoam } else { "true" }
             
             # JDK
-            JDK = if ($xmlConfig.project.jdk) { Get-XmlNodeText $xmlConfig.project.jdk } else { "" }
-            
-            # Workspace
-            Custom_Workspace = if ($xmlConfig.project.customWorkspace) { Get-XmlNodeText $xmlConfig.project.customWorkspace } else { "" }
+            JDK = if ($xmlConfig.project.jdk) { Get-XmlNodeText $xmlConfig.project.jdk } else { "default" }
             
             # Configuration Hash (for duplicate detection)
             Config_Hash = $configHash
@@ -215,14 +245,15 @@ foreach ($job in $allJobs) {
         $jobDetails += $jobInfo
         
     } catch {
-        Write-Host "Error processing $($job.name): $_" -ForegroundColor Red
-        # Add error entry
+        Write-Host "  ERROR: $_" -ForegroundColor Red
+        # Add error entry with partial info
         $jobDetails += [PSCustomObject]@{
             JobName = $job.name
             JobType = "ERROR"
             JobURL = $job.url
-            Status = "ERROR"
-            Description = "Failed to process: $_"
+            Status = if ($job.color) { $job.color } else { "UNKNOWN" }
+            Description = "Failed to process: $($_.Exception.Message)"
+            Config_Hash = "ERROR"
         }
     }
 }
@@ -231,20 +262,33 @@ foreach ($job in $allJobs) {
 $outputFile = "jenkins_jobs_export_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
 $jobDetails | Export-Csv -Path $outputFile -NoTypeInformation -Encoding UTF8
 
-Write-Host "`nExport completed!" -ForegroundColor Green
+Write-Host "`n=== Export Completed! ===" -ForegroundColor Green
 Write-Host "Output file: $outputFile" -ForegroundColor Yellow
-Write-Host "Total jobs exported: $($jobDetails.Count)" -ForegroundColor Yellow
+Write-Host "Total jobs processed: $($jobDetails.Count)" -ForegroundColor Yellow
+Write-Host "Successful: $(($jobDetails | Where-Object {$_.JobType -ne 'ERROR'}).Count)" -ForegroundColor Green
+Write-Host "Errors: $(($jobDetails | Where-Object {$_.JobType -eq 'ERROR'}).Count)" -ForegroundColor Red
 
 # Show summary statistics
-Write-Host "`n=== Summary ===" -ForegroundColor Cyan
-$duplicateHashes = $jobDetails | Group-Object Config_Hash | Where-Object { $_.Count -gt 1 }
-Write-Host "Potential duplicate groups (same config hash): $($duplicateHashes.Count)" -ForegroundColor Yellow
+Write-Host "`n=== Duplicate Analysis ===" -ForegroundColor Cyan
+$validJobs = $jobDetails | Where-Object { $_.Config_Hash -ne "ERROR" }
+$duplicateHashes = $validJobs | Group-Object Config_Hash | Where-Object { $_.Count -gt 1 } | Sort-Object Count -Descending
+
+Write-Host "Potential duplicate groups found: $($duplicateHashes.Count)" -ForegroundColor Yellow
 
 if ($duplicateHashes.Count -gt 0) {
-    Write-Host "`nDuplicate groups found:" -ForegroundColor Yellow
-    foreach ($group in $duplicateHashes) {
-        Write-Host "  - $($group.Count) jobs: $($group.Group.JobName -join ', ')" -ForegroundColor White
+    Write-Host "`nTop 10 Duplicate Groups:" -ForegroundColor Yellow
+    $duplicateHashes | Select-Object -First 10 | ForEach-Object {
+        Write-Host "`n  Group of $($_.Count) identical jobs:" -ForegroundColor White
+        $_.Group | ForEach-Object { Write-Host "    - $($_.JobName)" -ForegroundColor Gray }
     }
 }
 
-Write-Host "`nUpload the CSV file to AI for detailed duplicate analysis!" -ForegroundColor Green
+# Git repository summary
+Write-Host "`n=== Git Repository Summary ===" -ForegroundColor Cyan
+$gitRepos = $validJobs | Where-Object { $_.Git_URLs -ne "" } | Group-Object Git_URLs | Sort-Object Count -Descending
+Write-Host "Unique Git repositories used: $($gitRepos.Count)"
+$gitRepos | Select-Object -First 5 | ForEach-Object {
+    Write-Host "  - $($_.Count) jobs using: $($_.Name)" -ForegroundColor Gray
+}
+
+Write-Host "`n==> Upload '$outputFile' to Claude for detailed duplicate analysis! <==" -ForegroundColor Green

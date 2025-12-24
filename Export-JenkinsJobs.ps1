@@ -119,7 +119,7 @@ foreach ($job in $allJobs) {
         $configResponse = Invoke-WebRequest -Uri $configUrl -Headers $headers -Method Get -UseBasicParsing
         
         # Get content as UTF8 string
-        $configRaw = [System.Text.Encoding]::UTF8.GetString($configResponse.Content)
+        $configRaw = $configRaw = $configResponse.Content
         
         # Parse XML with fix
         $xmlConfig = Get-ParsedXml -xmlContent $configRaw

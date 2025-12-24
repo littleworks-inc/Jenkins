@@ -1,14 +1,6 @@
-.\Export-JenkinsJobs.ps1
-Fetching all Jenkins jobs...
-Found 309 jobs
-[1/309] Processing: AA_Team
-
-Security Warning: Script Execution Risk
-Invoke-WebRequest parses the content of the web page. Script code in the web page might be run when the   
-page is parsed.
-      RECOMMENDED ACTION:
-      Use the -UseBasicParsing switch to avoid script code execution.
-
-      Do you want to continue?
-
-[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"):
+[19/309] Processing: AML - Compute Instance de-Provision                                                      XML Parse Error: Exception calling "LoadXml" with "1" argument(s): "Name cannot begin with the '<' character, hexadecimal value 0x3C. Line 1, position 3."
+  ERROR: Failed to parse XML
+[20/309] Processing: AML - Compute Instance Provision
+    XML Parse Error: Exception calling "LoadXml" with "1" argument(s): "Name cannot begin with the '<' character, hexadecimal value 0x3C. Line 1, position 3."
+  ERROR: Failed to parse XML
+[21/309] Processing: AML - Compute Instance Provision - AABuild
